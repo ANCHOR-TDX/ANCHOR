@@ -1,0 +1,3 @@
+#!/bin/sh
+[ "$1" = "deconfig" ] || ip addr add $ip/$subnet dev $interface
+[ "$router" ] && ip route add default via $router

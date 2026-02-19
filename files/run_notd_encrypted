@@ -1,0 +1,21 @@
+#!/bin/bash
+
+qemu-system-x86_64 \
+    -accel kvm \
+    -cpu host \
+    -m 4G \
+    -machine type=q35 \
+    -nographic \
+    -bios /usr/share/ovmf/OVMF.fd \
+    -netdev user,id=net00,hostfwd=tcp::2424-:22 \
+    -device virtio-net-pci,netdev=net00 \
+    -drive file=encrypted.qcow2,if=virtio 
+    # -drive file=tdx-guest-ubuntu-25.04-generic.qcow2,if=virtio \
+#    -snapshot \
+#    -kernel /boot/vmlinuz-6.8.0-79-generic \
+#    -initrd /boot/initrd.img-6.8.0-79-generic \
+#    -append "root=/dev/vda1 rw console=ttyS0,115200n8 break=mount" \
+#    -drive if=pflash,format=raw,readonly=on,file=/usr/share/OVMF/OVMF_CODE_4M.fd \
+#    -drive if=pflash,format=raw,file=/usr/share/OVMF/OVMF_VARS_4M.fd
+    #-machine type=q35,confidential-guest-support=tdx0 \
+

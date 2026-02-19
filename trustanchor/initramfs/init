@@ -1,0 +1,39 @@
+#!/bin/sh
+
+mkdir -p /proc /sys /dev
+
+mount -t proc none /proc
+mount -t sysfs none /sys
+mount -t devtmpfs none /dev
+
+echo $PATH
+
+echo "Booted into Kernel A"
+busybox ip link set eth0 up
+busybox ip addr add 10.0.2.15/24 dev eth0
+busybox ip route add default via 10.0.2.2
+
+echo "Getting key"
+mount -t configfs none /sys/kernel/config
+PASS="$(./client 2>/dev/null | busybox tr -d '\n\r')"
+echo $PASS
+
+echo "Decrypting second kernel"
+echo -n $PASS | cryptsetup open /dev/vda2 c --key-file -
+mount /dev/mapper/c mnt
+
+echo "kexec into second kernel"
+cd mnt && kexec -l vmlinuz-6.8.0-107-generic --initrd=initrd.img-6.8.0-107-generic --reuse-cmdline
+kexec -e
+
+
+# kexec -l /bzImage-kexec \
+  # --initrd=/initramfs-kexec.img \
+  # --command-line="console=ttyS0 earlyprintk=serial,ttyS0,115200 debug ignore_loglevel nokaslr rdinit=/init"
+
+# echo "Executing kexec..."
+# kexec -e
+
+echo "If you see this, kexec failed."
+exec /bin/sh
+
